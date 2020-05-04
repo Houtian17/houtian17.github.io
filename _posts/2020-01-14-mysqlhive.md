@@ -69,6 +69,11 @@ keywords: [Linux，大数据,hadoop，mysql,hive]
 
 - 得到临时密码，进入数据库配置密码
 
+  ```
+  [root@hadoop01 software]# mysql -uroot -p0F5Zr4e5AW.a
+  ```
+- 修改密码
+
   ```mysql
   mysql> alter USER 'root'@'localhost' IDENTIFIED BY '123456';
   ```
