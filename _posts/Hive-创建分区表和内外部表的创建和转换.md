@@ -1,0 +1,172 @@
+---
+layout: post
+title: "Hive 创建分区表和内外部表的创建和转换"
+description: ""
+category: Big data
+tags: []
+modify: 2017-08-14 23:42:12
+---
+
+## 内部表和外部表
+
+内部表数据由Hive自身管理，外部表数据由HDFS管理。内部表数据存储的位置是删除内部表会直接删除元数据及存储数据，删除外部表仅仅会删除元数据，HDFS上的文件并不会被删除，对内部表的修改会将修改直接同步给元数据，而对外部表的表结构和分区进行修改，则需要修复(MSCK REPAIR TABLE table_name)。
+
+## 创建内部表
+
+```mysql
+hive> use default;
+OK
+Time taken: 0.494 seconds
+hive> create table t1(
+    > id int
+    > ,name string
+    > ,hobby array<string>
+    > ,add map<String,String>
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > collection items terminated by '-'
+    > map keys terminated by ':'
+    > ;
+OK
+Time taken: 0.539 seconds
+```
+
+每一行的数据定义为','来分割，Collection的条目以'-'来分割，Map的条目以':'来分割。
+
+接下来使用`desc t1;`来查看表的描述。
+
+```mysql
+hive> desc t1;
+OK
+id                  	int                 	                    
+name                	string              	                    
+hobby               	array<string>       	                    
+add                 	map<string,string>  	                    
+Time taken: 0.302 seconds, Fetched: 4 row(s)
+```
+
+## 在已创建的表中装载数据
+
+```mysql
+load data local inpath '/usr/local/apps/hive/data/data1' overwrite into table t1;
+```
+
+使用的文本如下：
+
+```mysql
+1,xiaoming,book-TV-code,beijing:chaoyang-shagnhai:pudong
+2,lilei,book-code,nanjing:jiangning-taiwan:taibei
+3,lihua,music-book,heilongjiang:haerbin
+```
+
+### 	装载数据并查看内容
+
+```mysql
+hive> load data local inpath '/usr/local/apps/hive/data/data1' overwrite into table t1;
+Loading data to table default.t1
+Table default.t1 stats: [numFiles=1, numRows=0, totalSize=147, rawDataSize=0]
+OK
+Time taken: 5.916 seconds
+hive> select * from t1;
+OK
+1	xiaoming	["book","TV","code"]	{"beijing":"chaoyang","shagnhai":"pudong"}
+2	lilei	["book","code"]	{"nanjing":"jiangning","taiwan":"taibei"}
+3	lihua	["music","book"]	{"heilongjiang":"haerbin"}
+Time taken: 0.827 seconds, Fetched: 3 row(s)
+```
+
+## 创建外部表
+
+```mysql
+hive> create external table t2(
+    >     id      int
+    >    ,name    string
+    >    ,hobby   array<string>
+    >    ,add     map<String,string>
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > collection items terminated by '-'
+    > map keys terminated by ':'
+    > location '/user/t2'
+    > ;
+OK
+Time taken: 0.315 seconds
+```
+
+依旧可以使用`select * from t2;`查看表的内容。
+
+接下来，可以在 hdfs 面板查看内部表和外部表文件的位置。
+
+[![YkWLin.png](https://s1.ax1x.com/2020/05/06/YkWLin.png)](https://imgchr.com/i/YkWLin)
+[![YkWOGq.png](https://s1.ax1x.com/2020/05/06/YkWOGq.png)](https://imgchr.com/i/YkWOGq)
+
+## 查看表的信息
+
+```mysql
+desc formatted table_name;
+```
+
+### 内部表
+
+[![Ykf4YR.png](https://s1.ax1x.com/2020/05/06/Ykf4YR.png)](https://imgchr.com/i/Ykf4YR)
+
+### 外部表
+
+[![Ykfhk9.png](https://s1.ax1x.com/2020/05/06/Ykfhk9.png)](https://imgchr.com/i/Ykfhk9)
+
+图中managed table就是内部表，而external table就是外部表。如果使用`drop table t1`，`drop table t2`，这个时候在 HDFS 中，t1 这个文件已经不存在了，但是 t2 依旧存在，因为外部表仅仅只是删除元数据。如果这个时候再继续创建一个 t2 的外部表，里面的数据依旧存在。 
+
+##内外表转换
+
+在对hive进行进一步了解的同时，发现了hive的内部表和外部表可以通过更改属性进行转换，并且不会因为数据量大小影响转换的性能。
+
+### 内部表
+
+没有external修饰，表数据保存在Hive默认的路径下，数据完全由Hive管理，删除表时元数据和表数据都会一起删除。
+
+### 外部表
+
+有external修饰，表数据保存在HDFS上，该位置由用户指定。删除表时，只会删除表的元数据，所以外部表不是有Hive完全管理的。
+
+### 外部表和内部表区别
+
+- 最大的区别：外部表删除表仅仅删除hive中元数据不删除数据和指定的路径，内部表如果drop掉表，数据和默认路径都删除了。
+- 一般建表没有特别说一定要建内部还是外部表，看个人喜好或者公司规定，若怕数据误删可以建外部表为主。
+- 外部表的表数据由HDFS管理，Hive管理外部表元数据，尔内部表的表数据和元数据都由Hive管理
+- 外部表的表数据存储位置由用户指定，而内部表的数据默认存储位置为/apps/hive/warehouse/数据库名.db/数据文件名
+- 删除外部表时，只会删除表的元数据，表数据仍然存储在HDFS中，删除内部表时，元数据和表数据都会删除
+- 对内部表修改时会同步到元数据，而对外部表结构和分区修改时，需要进行修复
+  msck rapair table table_name
+
+### 外部表和内部表的转换
+
+外部表和内部表其实是可以通过更改属性来转换的。而且不会因为数据量大就转换性能慢,，这个时候就是路径是在默认hive仓库路径下也不会影响外部表的性质，即删除表不会删除路径和数据，修改表名也不会将文件夹名称修改，转换示例如下：
+
+```mysql
+内部转外部
+alter table tableA set TBLPROPERTIES('EXTERNAL'='true')
+外部转内部
+alter table tableA set TBLPROPERTIES('EXTERNAL'='false')
+```
+
+## 为何要转换内外表
+
+如果最开始创建了外部表在默认路径下，这个时候如果对表重名的话，相应的路径名是不会变，这个时候如果在重建一个表名和原表一样名称的表就会造成两个表的数据路径是一样的，显然这是不想要的结果。
+
+- 首先创建了一个外部表 t2 ，但是路径不指定即为默认，这时候是否修改 t2 为 t22 ,同时查询表 t22 的数据的确是刚刚插入的数据，这个时候因为 t2 为外表,那他的数据路径依旧是/user/hive/warehouse/test.db/t2。
+
+  ![](https://ftp.bmp.ovh/imgs/2020/05/e385b8cfcdd4f7b4.png)
+
+- 这个时候在创建一个表 t2 ，因为没有指定路径，t2 也是/user/hive/warehouse/test.db/t2，而因为先后创建的两个表结构是一样，这个时候查询t2,其实也能查出这个数据来，这相当于t2和t22共用数据源，如果我建立第二个t2表结构不一样第一次建的话，那查询t2就会查询报查询结构的错。
+
+  [![Yk5BYd.png](https://s1.ax1x.com/2020/05/06/Yk5BYd.png)](https://imgchr.com/i/Yk5BYd)
+
+所以考虑到上面出现的问题，比如要做一个 test_1 的备份，但又不希望两个表的数据结构相互影响，就可以在**rename test_1 前把 test_1 先改为内部表然后在重命名即可，再新建一个 test_1 ，就不会冲突了**。
+
+```sql
+alter table test_1 set TBLPROPERTIES ('EXTERNAL = false');
+alter table test_1 rename to table_1_bak;
+```
+
