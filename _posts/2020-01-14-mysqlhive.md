@@ -2,7 +2,7 @@
 layout: post
 title: MySql 和 Hive 环境搭建
 description: ""
-categories: [Linux]
+categories: [Big Data]
 keywords: [Linux，大数据,hadoop，mysql,hive]
 ---
 
