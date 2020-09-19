@@ -1,0 +1,297 @@
+---
+layout: post
+title: Linux 用户和权限管理
+description: ""
+categories: [Linux]
+keywords: [Linux，大数据]
+---
+
+## 用户账号的类型
+
+Linux系统中，根据系统管理的需要，将用户账号分为3种不同的类型。
+
+- 超级用户
+  - root是linux系统中默认的超级用户账号，对系统拥有完全的权限。
+- 普通用户
+  - 普通用户需要由root用户或其他管理员创建，拥有的权限受到一定的限制。
+- 程序用户
+  - 这类用户最大的特点就是不能登陆系统，主要作用是用于让后台进程或服务类进程以非管理员的身份运行。
+
+Linux 系统中的所有用户信息都存放在 /etc/passwd 文件中，可以执行 "wc -l /etc/passwd" 命令来查看系统中存在的用户。
+
+```shell
+[root@master ~]# wc -l /etc/passwd
+20 /etc/passwd
+```
+
+## 用户组的类型
+
+在Linux 系统中，每一个用户账号至少要属于一个组，这个组成为该用户的基本组。Linux系统中，每创建一个用户账号就会自动创建一个与该账号同名的用户组。
+
+## UID 和 GID
+
+### UID
+
+UID是linux系统中每个用户账号的唯一标识符。UID是区分用户的基本依据，root 用户的UID为固定值0，程序用户账号默认为1～999，普通账户默认为1000～60000。
+
+### GID
+
+每个用户组有一个数字形式的标识符，称为GID。root 组的GID为固定值 0，程序组为1～999，普通用户为1000～60000。
+
+root 被称为超级用户并不是因为它叫root，而是因为它的UID为0。
+
+## 用户和组的配置文件
+
+Linux 中与用户账号相关的配置文件主要有两个：
+
+- /etc/passwd
+  - 用于保存用户名称，家目录，登陆shell。它是一个文本文件，任何用户都可以读取文件中的内容。其中的格式和具体含义可以参考书本p85。
+- /etc/shadow
+  - 用于保存用户的密码和账号有效信息等。该文件是所有用户都可读的。该文件又被称为影子文件，只有root 用户拥有权限，从而保证用户密码的安全性。此文件的具体具体含义和字段可以参考书本p86。
+
+## 管理用户和组
+
+### useradd 命令
+
+用于添加账号，基本的命令格式如下：
+
+```shell
+useradd [选项] 用户名
+```
+
+按照默认值创建用户 user1。
+
+```shell
+[root@master ~]# useradd user1
+[root@master ~]# cat /etc/passwd
+user1:x:1000:1000::/home/user1:/bin/bash
+```
+
+### useradd 命令的常用选项
+
+- -u：指定用户的UID，UID不能重复
+
+  ```shell
+  [root@master ~]# useradd -u 1777 user2
+  [root@master ~]# id user2
+  uid=1777(user2) gid=1777(user2) 组=1777(user2)
+  ```
+
+- -d：指定用户的家目录
+
+  ```shell
+  [root@master ~]# useradd -d /admin admin
+  [root@master ~]# ls -a /admin
+  .  ..  .bash_logout  .bash_profile  .bashrc
+  ```
+
+- -g：指定用户的基本组
+
+  ```shell
+  [root@master ~]# useradd -g admin user4
+  [root@master ~]# id user4
+  uid=1002(user4) gid=1001(admin) 组=1001(admin)
+  ```
+
+- -G：指定用户的附加组
+
+  ```shell
+  [root@master ~]# useradd -G root user5
+  [root@master ~]# id user5
+  uid=1778(user5) gid=1778(user5) 组=1778(user5),0(root)
+  ```
+
+另外的选项详情见书本p89。
+
+### passwd 命令
+
+通过useradd 创建的用户账号，可以使用passwd来为用户设置或更改密码。
+
+```shell
+[root@master ~]# passwd user1
+更改用户 user1 的密码 。
+新的 密码：
+重新输入新的 密码：
+passwd：所有的身份验证令牌已经成功更新。
+```
+
+passwd 命令的相关选项：
+
+- -d：清除密码
+- -l：锁定用户账号
+- -u：解锁用户账号
+- --stdin：从文件或者管道读取密码
+
+### userdel 命令
+
+用于删除用户账号
+
+### usermod 命令
+
+修改账户属性
+
+### groupadd 命令
+
+用于创建用户组
+
+### gpasswd 命令
+
+该命令可以为用户组添加密码，但是使用率比较低
+
+### groupdel 命令
+
+用于删除指定的用户组
+
+## 管理权限和归属
+
+**1.访问权限**
+
+读权限r：允许查看文件内容    八进制代表数：4
+
+写权限w：允许修改文件内容   八进制代表数：2
+
+可执行文件x：允许运行程序    八进制代表数：0
+
+**2.归属权限**
+
+属主：拥有该文件的用户账号
+
+属组：拥有该文件的组账号
+
+**3.文件的权限及归属**
+
+例：ls -l install.log
+
+-rw-r--r--. 1   root    root   
+
+第一位表示文件类型
+
+\- ：一般文件
+
+d：表目录
+
+l：表软连接
+
+p：PIPE管道
+
+s：socket 通信套接字文件
+
+c：字符设备文件
+
+b：块设备文件
+
+除第一位取三位各表示 读权限、写权限、可执行权限
+
+第一个root表示属主
+
+第二个root表示属组
+
+**4.设置文件或目录权限**
+
+格式 ：chmod [-R] [ugoa] [+-=] [rwx] 文件名
+
+-R 表递归
+
+u  属主  |   + 添加   |  r 读权限
+
+g   属组 |   - 删除   | w写权限
+
+o 其他人 |   = 重置   | x 执行权限
+
+a 所有人
+
+**5.设置文件归属**
+
+格式：chown 属主 文件名
+
+​      	 chown 属组 文件名
+
+​    	   chown 属主：属组   文件名
+
+**6.权限掩码**
+
+umask命令：控制新建的文件或目录的权限
+
+目录默认的umask权限值为755  目录满权限的umask值为777
+
+文件默认的umask权限值为644  文件满权限的umask值为666
+
+## 如何改变文件属性与权限
+
+##### chgrp : 改变文件所属群组
+
+用法：
+
+```
+chgrp [-r] groupName dirname/filename
+1
+```
+
+把后面文件的群组设置为groupName， -r,表示进行递归的持续变更，就是如果后面是个文件夹的话，会递归设置文件夹里面的文件。
+
+范例：
+
+```
+chgrp users initial-setup-ks.cfg
+1
+```
+
+##### chown : 改变文件拥有者
+
+用法：
+
+```
+chown [-r] accountName dirname/filename
+1
+```
+
+把文件拥有者设置为账号accountName，-r同chgrp
+
+范例：
+
+```
+chown root initial-setup-ks.cfg
+1
+```
+
+##### chmod : 改变文件的权限
+
+用法：
+
+```
+chmod [-r] rwxrwxrwx dirname/filename
+1
+```
+
+把权限设置为:rwxrwxrwx，-r同chgrp。这里权限是根据需要更改的。可以用数字代替，如上面的指令可以用下面代替：
+
+```
+chmod [-r] 777 dirname/filename
+1
+```
+
+范例：
+
+```
+chmod 777 .bashrc
+```
+
+## Linux下修改用户home目录
+
+一般在Linux上新建一个用户，会在/home目录下自动创建一个以用户名命名的home目录，修改linux下用户自动建立的家目录
+使用vi编辑器打开**/etc/default/useradd** 这个文件，然后进行编辑
+
+默认情况下应该类似以下内容：
+
+```
+# useradd defaults file         # useradd默认文件
+GROUP=100                       #表示可创建普通组
+HOME=/home                      #用户的家目录建在/home，可以修改为其他目录；用户家目录的默认创建地
+INACTIVE=-1                     #是否启用帐号过期停权，-1表示不启用；宽限天数，0及以下数皆为无效数字
+EXPIRE=                         #帐号终止日期，不设置表示不启用；帐号失效日期(如：20081212)
+SHELL=/bin/bash                 #所用SHELL的类型；登录后执行的程序
+SKEL=/etc/skel                  #用户家目录中的环境文件
+CREATE_MAIL_SPOOL=yes           #是否创建用户邮件缓冲，yes表示创建
+```
+
+**SKEL=/etc/skel** 用户家目录中的环境文件，默认添加用户的目录默认文件存放位置；也就是说，当我们用adduser添加用户时，用户家目录下的文件（.bash_logout .bash_profile .bashrc），都是从这个目录中复制过去的；
