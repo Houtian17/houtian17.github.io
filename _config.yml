@@ -6,8 +6,8 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: 忏悔是一道枷锁，处罚善良的人
-name: andy
+title: boom shaka laka
+name: 4ocuszz^inawe
 email: 1033893991@qq.com
 location: Zhejiang,hangzhou
 company: HZY
@@ -42,8 +42,6 @@ kramdown:
   input: GFM
   enable_coderay: true
 
-# Disque
-disque: httpdongchuangithubio.disqus.com
 
 # Pagination
 paginate: 10

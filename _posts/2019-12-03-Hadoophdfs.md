@@ -2,7 +2,7 @@
 layout: post
 title: Hadoop 搭建 hdfs 分布式集群
 description: ""
-categories: [Linux]
+categories: [Big Data]
 keywords: [Linux，大数据]
 
 ---
