@@ -1,0 +1,662 @@
+---
+layout: post
+title: Python 基础入门(二)
+description: ""
+categories: [Python]
+keywords: [python]
+---
+
+## 字符串和常用数据结构
+
+### 使用字符串
+
+所谓**字符串**，就是由零个或多个字符组成的有限序列，一般记为[![$${\displaystyle s=a_{1}a_{2}\dots a_{n}(0\leq n \leq \infty)}$$](https://github.com/jackfrued/Python-100-Days/raw/master/Day01-15/res/formula_5.png)](https://github.com/jackfrued/Python-100-Days/blob/master/Day01-15/res/formula_5.png)。在Python程序中，如果我们把单个或多个字符用单引号或者双引号包围起来，就可以表示一个字符串。
+
+```python
+s1 = 'hello, world!'
+s2 = "hello, world!"
+# 以三个双引号或单引号开头的字符串可以折行
+s3 = """
+hello, 
+world!
+"""
+print(s1, s2, s3, end='')
+```
+
+可以在字符串中使用`\`（反斜杠）来表示转义，也就是说`\`后面的字符不再是它原来的意义，例如：`\n`不是代表反斜杠和字符n，而是表示换行；而`\t`也不是代表反斜杠和字符t，而是表示制表符。所以如果想在字符串中表示`'`要写成`\'`，同理想表示`\`要写成`\\`。可以运行下面的代码看看会输出什么。
+
+```python
+s1 = '\'hello, world!\''
+s2 = '\n\\hello, world!\\\n'
+print(s1, s2, end='')
+```
+
+在`\`后面还可以跟一个八进制或者十六进制数来表示字符，例如`\141`和`\x61`都代表小写字母`a`，前者是八进制的表示法，后者是十六进制的表示法。也可以在`\`后面跟Unicode字符编码来表示字符，例如`\u9a86\u660a`代表的是中文“骆昊”。运行下面的代码，看看输出了什么。
+
+```python
+s1 = '\141\142\143\x61\x62\x63'
+s2 = '\u9a86\u660a'
+print(s1, s2)
+```
+
+如果不希望字符串中的`\`表示转义，我们可以通过在字符串的最前面加上字母`r`来加以说明，再看看下面的代码又会输出什么。
+
+```python
+s1 = r'\'hello, world!\''
+s2 = r'\n\\hello, world!\\\n'
+print(s1, s2, end='')
+```
+
+Python为字符串类型提供了非常丰富的运算符，我们可以使用`+`运算符来实现字符串的拼接，可以使用`*`运算符来重复一个字符串的内容，可以使用`in`和`not in`来判断一个字符串是否包含另外一个字符串（成员运算），我们也可以用`[]`和`[:]`运算符从字符串取出某个字符或某些字符（切片运算），代码如下所示。
+
+```python
+s1 = 'hello ' * 3
+print(s1) # hello hello hello 
+s2 = 'world'
+s1 += s2
+print(s1) # hello hello hello world
+print('ll' in s1) # True
+print('good' in s1) # False
+str2 = 'abc123456'
+# 从字符串中取出指定位置的字符(下标运算)
+print(str2[2]) # c
+# 字符串切片(从指定的开始索引到指定的结束索引)
+print(str2[2:5]) # c12
+print(str2[2:]) # c123456
+print(str2[2::2]) # c246
+print(str2[::2]) # ac246
+print(str2[::-1]) # 654321cba
+print(str2[-3:-1]) # 45
+```
+
+### 字符串的方法
+
+在Python中，我们还可以通过一系列的方法来完成对字符串的处理，代码如下所示。
+
+```python
+str1 = 'hello, world!'
+# 通过内置函数len计算字符串的长度
+print(len(str1)) # 13
+# 获得字符串首字母大写的拷贝
+print(str1.capitalize()) # Hello, world!
+# 获得字符串每个单词首字母大写的拷贝
+print(str1.title()) # Hello, World!
+# 获得字符串变大写后的拷贝
+print(str1.upper()) # HELLO, WORLD!
+# 从字符串中查找子串所在位置
+print(str1.find('or')) # 8
+print(str1.find('shit')) # -1
+# 与find类似但找不到子串时会引发异常
+# print(str1.index('or'))
+# print(str1.index('shit'))
+# 检查字符串是否以指定的字符串开头
+print(str1.startswith('He')) # False
+print(str1.startswith('hel')) # True
+# 检查字符串是否以指定的字符串结尾
+print(str1.endswith('!')) # True
+# 将字符串以指定的宽度居中并在两侧填充指定的字符
+print(str1.center(50, '*'))
+# 将字符串以指定的宽度靠右放置左侧填充指定的字符
+print(str1.rjust(50, ' '))
+str2 = 'abc123456'
+# 检查字符串是否由数字构成
+print(str2.isdigit())  # False
+# 检查字符串是否以字母构成
+print(str2.isalpha())  # False
+# 检查字符串是否以数字和字母构成
+print(str2.isalnum())  # True
+str3 = '  jackfrued@126.com '
+print(str3)
+# 获得字符串修剪左右两侧空格之后的拷贝
+print(str3.strip())
+```
+
+我们之前讲过，可以用下面的方式来格式化输出字符串。
+
+```python
+a, b = 5, 10
+print('%d * %d = %d' % (a, b, a * b))
+```
+
+当然，我们也可以用字符串提供的方法来完成字符串的格式，代码如下所示。
+
+```python
+a, b = 5, 10
+print('{0} * {1} = {2}'.format(a, b, a * b))
+```
+
+Python 3.6以后，格式化字符串还有更为简洁的书写方式，就是在字符串前加上字母`f`，我们可以使用下面的语法糖来简化上面的代码。
+
+```python
+a, b = 5, 10
+print(f'{a} * {b} = {a * b}')
+```
+
+## 列表
+
+`list`是处理一组有序项目的数据结构，即你可以在一个列表中存储一个 序列 的项目。假想你有一个购物列表，上面记载着你要买的东西，你就容易理解列表了。只不过在你的购物表上，可能每样东西都独自占有一行，而在Python中，你在每个项目之间用逗号分割。
+
+### 使用列表
+
+不知道大家是否注意到，刚才我们讲到的字符串类型（`str`）和之前我们讲到的数值类型（`int`和`float`）有一些区别。数值类型是标量类型，也就是说这种类型的对象没有可以访问的内部结构；而字符串类型是一种结构化的、非标量类型，所以才会有一系列的属性和方法。接下来我们要介绍的列表（`list`），也是一种结构化的、非标量类型，它是值的有序序列，每个值都可以通过索引进行标识，定义列表可以将列表的元素放在`[]`中，多个元素用`,`进行分隔，可以使用`for`循环对列表元素进行遍历，也可以使用`[]`或`[:]`运算符取出列表中的一个或多个元素。
+
+下面的代码演示了如何定义列表、如何遍历列表以及列表的下标运算。
+
+```python
+list1 = [1, 3, 5, 7, 100]
+print(list1) # [1, 3, 5, 7, 100]
+# 乘号表示列表元素的重复
+list2 = ['hello'] * 3
+print(list2) # ['hello', 'hello', 'hello']
+# 计算列表长度(元素个数)
+print(len(list1)) # 5
+# 下标(索引)运算
+print(list1[0]) # 1
+print(list1[4]) # 100
+# print(list1[5])  # IndexError: list index out of range
+print(list1[-1]) # 100
+print(list1[-3]) # 5
+list1[2] = 300
+print(list1) # [1, 3, 300, 7, 100]
+# 通过循环用下标遍历列表元素
+for index in range(len(list1)):
+    print(list1[index])
+# 通过for循环遍历列表元素
+for elem in list1:
+    print(elem)
+# 通过enumerate函数处理列表之后再遍历可以同时获得元素索引和值
+for index, elem in enumerate(list1):
+    print(index, elem)
+```
+
+下面的代码演示了如何向列表中添加元素以及如何从列表中移除元素。
+
+```python
+list1 = [1, 3, 5, 7, 100]
+# 添加元素
+list1.append(200)
+list1.insert(1, 400)
+# 合并两个列表
+# list1.extend([1000, 2000])
+list1 += [1000, 2000]
+print(list1) # [1, 400, 3, 5, 7, 100, 200, 1000, 2000]
+print(len(list1)) # 9
+# 先通过成员运算判断元素是否在列表中，如果存在就删除该元素
+if 3 in list1:
+	list1.remove(3)
+if 1234 in list1:
+    list1.remove(1234)
+print(list1) # [1, 400, 5, 7, 100, 200, 1000, 2000]
+# 从指定的位置删除元素
+list1.pop(0)
+list1.pop(len(list1) - 1)
+print(list1) # [400, 5, 7, 100, 200, 1000]
+# 清空列表元素
+list1.clear()
+print(list1) # []
+```
+
+和字符串一样，列表也可以做切片操作，通过切片操作我们可以实现对列表的复制或者将列表中的一部分取出来创建出新的列表，代码如下所示。
+
+```python
+fruits = ['grape', 'apple', 'strawberry', 'waxberry']
+fruits += ['pitaya', 'pear', 'mango']
+# 列表切片
+fruits2 = fruits[1:4]
+print(fruits2) # apple strawberry waxberry
+# 可以通过完整切片操作来复制列表
+fruits3 = fruits[:]
+print(fruits3) # ['grape', 'apple', 'strawberry', 'waxberry', 'pitaya', 'pear', 'mango']
+fruits4 = fruits[-3:-1]
+print(fruits4) # ['pitaya', 'pear']
+# 可以通过反向切片操作来获得倒转后的列表的拷贝
+fruits5 = fruits[::-1]
+print(fruits5) # ['mango', 'pear', 'pitaya', 'waxberry', 'strawberry', 'apple', 'grape']
+```
+
+下面的代码实现了对列表的排序操作。
+
+```python
+list1 = ['orange', 'apple', 'zoo', 'internationalization', 'blueberry']
+list2 = sorted(list1)
+# sorted函数返回列表排序后的拷贝不会修改传入的列表
+# 函数的设计就应该像sorted函数一样尽可能不产生副作用
+list3 = sorted(list1, reverse=True)
+# 通过key关键字参数指定根据字符串长度进行排序而不是默认的字母表顺序
+list4 = sorted(list1, key=len)
+print(list1)
+print(list2)
+print(list3)
+print(list4)
+# 给列表对象发出排序消息直接在列表对象上进行排序
+list1.sort(reverse=True)
+print(list1)
+```
+
+### 使用元组
+
+Python中的元组与列表类似也是一种容器数据类型，可以用一个变量（对象）来存储多个数据，不同之处在于元组的元素不能修改，在前面的代码中我们已经不止一次使用过元组了。顾名思义，我们把多个元素组合到一起就形成了一个元组，所以它和列表一样可以保存多条数据。下面的代码演示了如何定义和使用元组。
+
+```python
+# 定义元组
+t = ('骆昊', 38, True, '四川成都')
+print(t)
+# 获取元组中的元素
+print(t[0])
+print(t[3])
+# 遍历元组中的值
+for member in t:
+    print(member)
+# 重新给元组赋值
+# t[0] = '王大锤'  # TypeError
+# 变量t重新引用了新的元组原来的元组将被垃圾回收
+t = ('王大锤', 20, True, '云南昆明')
+print(t)
+# 将元组转换成列表
+person = list(t)
+print(person)
+# 列表是可以修改它的元素的
+person[0] = '李小龙'
+person[1] = 25
+print(person)
+# 将列表转换成元组
+fruits_list = ['apple', 'banana', 'orange']
+fruits_tuple = tuple(fruits_list)
+print(fruits_tuple)
+```
+
+这里有一个非常值得探讨的问题，我们已经有了列表这种数据结构，为什么还需要元组这样的类型呢？
+
+1. 元组中的元素是无法修改的，事实上我们在项目中尤其是[多线程](https://zh.wikipedia.org/zh-hans/多线程)环境（后面会讲到）中可能更喜欢使用的是那些不变对象（一方面因为对象状态不能修改，所以可以避免由此引起的不必要的程序错误，简单的说就是一个不变的对象要比可变的对象更加容易维护；另一方面因为没有任何一个线程能够修改不变对象的内部状态，一个不变对象自动就是线程安全的，这样就可以省掉处理同步化的开销。一个不变对象可以方便的被共享访问）。所以结论就是：如果不需要对元素进行添加、删除、修改的时候，可以考虑使用元组，当然如果一个方法要返回多个值，使用元组也是不错的选择。
+2. 元组在创建时间和占用的空间上面都优于列表。我们可以使用sys模块的getsizeof函数来检查存储同样的元素的元组和列表各自占用了多少内存空间，这个很容易做到。
+
+### 使用集合
+
+Python中的集合跟数学上的集合是一致的，不允许有重复元素，而且可以进行交集、并集、差集等运算。
+
+[![0Vc79O.png](https://s1.ax1x.com/2020/09/28/0Vc79O.png)](https://imgchr.com/i/0Vc79O)
+
+可以按照下面代码所示的方式来创建和使用集合。
+
+```python
+# 创建集合的字面量语法
+set1 = {1, 2, 3, 3, 3, 2}
+print(set1)
+print('Length =', len(set1))
+# 创建集合的构造器语法(面向对象部分会进行详细讲解)
+set2 = set(range(1, 10))
+set3 = set((1, 2, 3, 3, 2, 1))
+print(set2, set3)
+# 创建集合的推导式语法(推导式也可以用于推导集合)
+set4 = {num for num in range(1, 100) if num % 3 == 0 or num % 5 == 0}
+print(set4)
+
+{1, 2, 3}
+Length = 3
+{1, 2, 3, 4, 5, 6, 7, 8, 9} {1, 2, 3}
+{3, 5, 6, 9, 10, 12, 15, 18, 20, 21, 24, 25, 27, 30, 33, 35, 36, 39, 40, 42, 45, 48, 50, 51, 54, 55, 57, 60, 63, 65, 66, 69, 70, 72, 75, 78, 80, 81, 84, 85, 87, 90, 93, 95, 96, 99}
+```
+
+向集合添加元素和从集合删除元素。
+
+```python
+set1.add(4)
+set1.add(5)
+set2.update([11, 12])
+set2.discard(5)
+if 4 in set2:
+    set2.remove(4)
+print(set1, set2)
+print(set3.pop())
+print(set3)
+```
+
+集合的成员、交集、并集、差集等运算。
+
+```python
+# 集合的交集、并集、差集、对称差运算
+print(set1 & set2)
+# print(set1.intersection(set2))
+print(set1 | set2)
+# print(set1.union(set2))
+print(set1 - set2)
+# print(set1.difference(set2))
+print(set1 ^ set2)
+# print(set1.symmetric_difference(set2))
+# 判断子集和超集
+print(set2 <= set1)
+# print(set2.issubset(set1))
+print(set3 <= set1)
+# print(set3.issubset(set1))
+print(set1 >= set2)
+# print(set1.issuperset(set2))
+print(set1 >= set3)
+# print(set1.issuperset(set3))
+```
+
+> **说明：** Python中允许通过一些特殊的方法来为某种类型或数据结构自定义运算符（后面的章节中会讲到），上面的代码中我们对集合进行运算的时候可以调用集合对象的方法，也可以直接使用对应的运算符，例如`&`运算符跟intersection方法的作用就是一样的，但是使用运算符让代码更加直观。
+
+
+
+## 面向对象的编程
+
+"把一组数据结构和处理它们的方法组成对象（object），把相同行为的对象归纳为类（class），通过类的封装（encapsulation）隐藏内部细节，通过继承（inheritance）实现类的特化（specialization）和泛化（generalization），通过多态（polymorphism）实现基于对象类型的动态分派。"
+
+### 类和对象
+
+类和对象是面向对象编程的两个主要方面。**类**创建一个新类型，而**对象**这个类的 实例 。这类似于你有一个`int`类型的变量，这存储整数的变量是`int`类的实例（对象）。
+
+
+对象可以使用普通的 属于 对象的变量存储数据。属于一个对象或类的变量被称为**域**。对象也可以使用 属于 类的函数来具有功能。这样的函数被称为类的**方法**。这些术语帮助我们把它们与孤立的函数和变量区分开来。域和方法可以合称为类的**属性**。
+
+域有两种类型——属于每个实例/类的对象或属于类本身。它们分别被称为**实例变量**和**类变量**。
+
+类使用`class`关键字创建。类的域和方法被列在一个缩进块中
+
+### 使用对象的方法
+
+```python
+class Person:
+    def sayHi(self):
+        print("hello")
+
+p=Person()
+p.sayHi()
+```
+
+这里我们看到了`self`的用法。注意`sayHi`方法没有任何参数，但仍然在函数定义时有`self`。
+
+### __init__方法
+
+`__init__`方法在类的一个对象被建立时，马上运行。这个方法可以用来对你的对象做一些你希望的 初始化 。注意，这个名称的开始和结尾都是双下划线。
+
+```python
+class Person:
+    def __init__(self, name):
+        self.name = name
+
+    def sayHi(self):
+        print("hello",self.name)
+
+p = Person('hzb')
+p.sayHi()
+
+输出：hello hzb
+```
+
+这里，我们把`__init__`方法定义为取一个参数`name`（以及普通的参数`self`）。在这个`__init__`里，我们只是创建一个新的域，也称为`name`。注意它们是两个不同的变量，尽管它们有相同的名字。点号使我们能够区分它们。
+
+最重要的是，我们没有专门调用`__init__`方法，只是在创建一个类的新实例的时候，把参数包括在圆括号内跟在类名后面，从而传递给`__init__`方法。这是这种方法的重要之处。
+
+### 类与对象的方法
+
+有两种类型的 域 ——类的变量和对象的变量，它们根据是类还是对象 拥有 这个变量而区分。
+
+类的变量 由一个类的所有对象（实例）共享使用。只有一个类变量的拷贝，所以当某个对象对类的变量做了改动的时候，这个改动会反映到所有其他的实例上。
+
+对象的变量 由类的每个对象/实例拥有。因此每个对象有自己对这个域的一份拷贝，即它们不是共享的，在同一个类的不同实例中，虽然对象的变量有相同的名称，但是是互不相关的。通过一个例子会使这个易于理解。
+
+```python
+class Person:
+    pop = 0
+
+    def __init__(self, name):
+        self.name = name
+        print("Initializing:", self.name)
+        Person.pop += 1
+
+    def __del__(self):
+        print("says bye.", self.name)
+        Person.pop -= 1
+        if Person == 0:
+            print("i am the last one")
+        else:
+            print("there are still ", Person.pop, "people left")
+
+    def sayHi(self):
+        print("hello", self.name)
+
+    def howMany(self):
+        if Person.pop == 1:
+            print("I am the only person here.")
+        else:
+            print("We have", Person.pop, " persons here")
+
+
+swaroop1 = Person('hzb')
+swaroop1.sayHi()
+swaroop1.howMany()
+
+kalam = Person('xjf')
+kalam.sayHi()
+kalam.howMany()
+
+swaroop1.sayHi()
+swaroop1.howMany()
+```
+
+这是一个很长的例子，但是它有助于说明类与对象的变量的本质。这里，`population`属于`Person`类，因此是一个类的变量。`name`变量属于对象（它使用`self`赋值）因此是对象的变量。
+
+观察可以发现`__init__`方法用一个名字来初始化`Person`实例。在这个方法中，我们让`population`增加`1`，这是因为我们增加了一个人。同样可以发现，`self.name`的值根据每个对象指定，这表明了它作为对象的变量的本质。
+
+记住，你**只**能使用`self`变量来参考同一个对象的变量和方法。这被称为 属性参考 。
+
+在这个程序中，我们还看到**docstring**对于类和方法同样有用。我们可以在运行时使用`Person.__doc__`和`Person.sayHi.__doc__`来分别访问类与方法的文档字符串。
+
+就如同`__init__`方法一样，还有一个特殊的方法`__del__`，它在对象消逝的时候被调用。对象消逝即对象不再被使用，它所占用的内存将返回给系统作它用。在这个方法里面，我们只是简单地把`Person.population`减`1`。
+
+当对象不再被使用时，`__del__`方法运行，但是很难保证这个方法究竟在 什么时候 运行。如果你想要指明它的运行，你就得使用`del`语句，就如同我们在以前的例子中使用的那样。
+
+## 面向对象进阶
+
+### @property装饰器
+
+之前我们讨论过Python中属性和方法访问权限的问题，虽然我们不建议将属性设置为私有的，但是如果直接将属性暴露给外界也是有问题的，比如我们没有办法检查赋给属性的值是否有效。我们之前的建议是将属性命名以单下划线开头，通过这种方式来暗示属性是受保护的，不建议外界直接访问，那么如果想访问属性可以通过属性的getter（访问器）和setter（修改器）方法进行对应的操作。如果要做到这点，就可以考虑使用@property包装器来包装getter和setter方法，使得对属性的访问既安全又方便，代码如下所示。
+
+```python
+class Person(object):
+
+    def __init__(self, name, age):
+        self._name = name
+        self._age = age
+
+    @property
+    def name(selfs):
+        return selfs.name
+
+    @property
+    def age(self):
+        return self.age
+
+    @age.setter
+    def age(self, age):
+        self._age = age
+
+    def play(self):
+        if self._age <= 16:
+            print('%s正在玩飞行棋。'% self._name)
+        else:
+            print('%s正在玩自走棋。'% self._name)
+
+
+def main():
+    person = Person('王大锤', 12)
+    person.play()
+    person.age = 22
+    person.play()
+    # person.name = '白元芳'  # AttributeError: can't set attribute
+
+
+if __name__ == '__main__':
+    main()
+```
+
+### __slots__魔法
+
+我们讲到这里，不知道大家是否已经意识到，Python是一门[动态语言](https://zh.wikipedia.org/wiki/动态语言)。通常，动态语言允许我们在程序运行时给对象绑定新的属性或方法，当然也可以对已经绑定的属性和方法进行解绑定。但是如果我们需要限定自定义类型的对象只能绑定某些属性，可以通过在类中定义__slots__变量来进行限定。需要注意的是__slots__的限定只对当前类的对象生效，对子类并不起任何作用。
+
+```python
+class Person(object):
+
+    # 限定Person对象只能绑定_name, _age和_gender属性
+    __slots__ = ('_name', '_age', '_gender')
+
+    def __init__(self, name, age):
+        self._name = name
+        self._age = age
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, age):
+        self._age = age
+
+    def play(self):
+        if self._age <= 16:
+            print('%s正在玩飞行棋.' % self._name)
+        else:
+            print('%s正在玩斗地主.' % self._name)
+
+
+def main():
+    person = Person('王大锤', 22)
+    person.play()
+    person._gender = '男'
+    print(person._gender)
+
+if __name__ == '__main__':
+    main()
+```
+
+### 静态方法和类方法
+
+之前，我们在类中定义的方法都是对象方法，也就是说这些方法都是发送给对象的消息。实际上，我们写在类中的方法并不需要都是对象方法，例如我们定义一个“三角形”类，通过传入三条边长来构造三角形，并提供计算周长和面积的方法，但是传入的三条边长未必能构造出三角形对象，因此我们可以先写一个方法来验证三条边长是否可以构成三角形，这个方法很显然就不是对象方法，因为在调用这个方法时三角形对象尚未创建出来（因为都不知道三条边能不能构成三角形），所以这个方法是属于三角形类而并不属于三角形对象的。我们可以使用静态方法来解决这类问题，代码如下所示。
+
+```python
+from math import sqrt
+
+
+class Triangle(object):
+
+    def __init__(self, a, b, c):
+        self._a = a
+        self._b = b
+        self._c = c
+
+    @staticmethod
+    def is_valid(a, b, c):
+        return a + b > c and b + c > a and a + c > b
+
+    def perimeter(self):
+        return self._a + self._b + self._c
+
+    def area(self):
+        half = self.perimeter() / 2
+        return sqrt(half * (half - self._a) *
+                    (half - self._b) * (half - self._c))
+
+def main():
+    a,b,c=3,4,5
+    if Triangle.is_valid(a,b,c):
+        t=Triangle(a,b,c)
+        print(t.perimeter())
+        print(t.area())
+    else:
+        print('无法构成三角形')
+
+if __name__ == '__main__':
+    main()
+```
+
+## 类之间的关系
+
+简单的说，类和类之间的关系有三种：is-a、has-a和use-a关系。
+
+- is-a关系也叫继承或泛化，比如学生和人的关系、手机和电子产品的关系都属于继承关系。
+- has-a关系通常称之为关联，比如部门和员工的关系，汽车和引擎的关系都属于关联关系；关联关系如果是整体和部分的关联，那么我们称之为聚合关系；如果整体进一步负责了部分的生命周期（整体和部分是不可分割的，同时同在也同时消亡），那么这种就是最强的关联关系，我们称之为合成关系。
+- use-a关系通常称之为依赖，比如司机有一个驾驶的行为（方法），其中（的参数）使用到了汽车，那么司机和汽车的关系就是依赖关系。
+
+我们可以使用一种叫做[UML](https://zh.wikipedia.org/wiki/统一建模语言)（统一建模语言）的东西来进行面向对象建模，其中一项重要的工作就是把类和类之间的关系用标准化的图形符号描述出来。关于UML我们在这里不做详细的介绍，有兴趣的读者可以自行阅读[《UML面向对象设计基础》](https://e.jd.com/30392949.html)一书。
+
+[![0lC28g.png](https://s1.ax1x.com/2020/10/02/0lC28g.png)](https://imgchr.com/i/0lC28g)
+
+利用类之间的这些关系，我们可以在已有类的基础上来完成某些操作，也可以在已有类的基础上创建新的类，这些都是实现代码复用的重要手段。复用现有的代码不仅可以减少开发的工作量，也有利于代码的管理和维护，这是我们在日常工作中都会使用到的技术手段。
+
+### 继承和多态
+
+面向对象的编程带来的主要好处之一是代码的**重用**，实现这种重用的方法之一是通过 继承 机制。继承完全可以理解成类之间的 类型和子类型 关系。
+
+假设你想要写一个程序来记录学校之中的教师和学生情况。他们有一些共同属性，比如姓名、年龄和地址。他们也有专有的属性，比如教师的薪水、课程和假期，学生的成绩和学费。
+
+```python
+class SchoolMember:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+        print("Initialized SchoolMember:", self.name)
+
+    def tell(self):
+        print("name:", self.name, "age:", self.age)
+
+
+class Teacher(SchoolMember):
+    '''Represents a teacher.'''
+
+    def __init__(self, name, age, salary):
+        SchoolMember.__init__(self, name, age)
+        self.salary = salary
+        print("Initialized Teacher:", self.name)
+
+    def tell(self):
+        SchoolMember.tell(self)
+        print('Salary: "', self.salary)
+
+
+class Student(SchoolMember):
+    '''Represents a student.'''
+
+    def __init__(self, name, age, marks):
+        SchoolMember.__init__(self, name, age)
+        self.marks = marks
+        print("Initialized Student:", self.name)
+
+    def tell(self):
+        SchoolMember.tell(self)
+        print("Marks: ", self.marks)
+
+t = Teacher('Mrs. Shrividya', 40, 30000)
+s = Student('Swaroop', 22, 75)
+
+print()
+
+members=[t,s]
+for member in members :
+    member.tell()
+    
+输出：
+Initialized SchoolMember: Mrs. Shrividya
+Initialized Teacher: Mrs. Shrividya
+Initialized SchoolMember: Swaroop
+Initialized Student: Swaroop
+
+name: Mrs. Shrividya age: 40
+Salary: " 30000
+name: Swaroop age: 22
+Marks:  75
+```
+
+为了使用继承，我们把基本类的名称作为一个元组跟在定义类时的类名称之后。然后，我们注意到基本类的`__init__`方法专门使用`self`变量调用，这样我们就可以初始化对象的基本类部分。这一点十分重要——Python不会自动调用基本类的constructor，你得亲自专门调用它。
+
+我们还观察到我们在方法调用之前加上类名称前缀，然后把`self`变量及其他参数传递给它。
+
+注意，在我们使用`SchoolMember`类的`tell`方法的时候，我们把`Teacher`和`Student`的实例仅仅作为`SchoolMember`的实例。
+
+另外，在这个例子中，我们调用了子类型的`tell`方法，而不是`SchoolMember`类的`tell`方法。可以这样来理解，Python总是首先查找对应类型的方法，在这个例子中就是如此。如果它不能在导出类中找到对应的方法，它才开始到基本类中逐个查找。基本类是在类定义的时候，在元组之中指明的。
+
+一个术语的注释——如果在继承元组中列了一个以上的类，那么它就被称作 多重继承 。
